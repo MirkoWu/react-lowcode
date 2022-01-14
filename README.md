@@ -83,3 +83,42 @@ module.exports = function (app) {
 
 此处需要注意的是 setupProxy.js 文件是在src目录，而不是在根目录
 ```
+
+### Python 服务跨域配置
+
+
+安装flask-cors
+```
+pip install flask-cors
+```
+方法一：
+使用@cross_origin装饰器 配置单个路由	适用于配置特定的API接口
+```
+@app.route("/")
+@cross_origin()
+def helloWorld():
+ return "Hello, cross-origin-world!"
+ ```
+
+ 方法二：
+ ```
+  使用CORS函数 配置全局API接口	适用于全局的API接口配置
+
+应用全局配置
+
+app = Flask(__name__)
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+ 
+@app.route("/api/v1/users")
+def list_users():
+ return "user example"
+
+单独Blueprints配置
+
+api_v1 = Blueprint('API_v1', __name__)
+CORS(api_v1) 
+ 
+@api_v1.route("/api/v1/users/")
+def list_users():
+ return "user example"
+ ```
