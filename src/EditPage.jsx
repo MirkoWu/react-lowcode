@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import { Button, List, Space, Image, Grid, NavBar, Input, Rate, Switch } from 'antd-mobile';
-import { DatePicker, Tag } from 'antd';
+import { Layout, DatePicker, Tag, Menu, Breadcrumb } from 'antd';
+
 import Sortable from 'react-sortablejs';
 import uniqueId from 'lodash/uniqueId';
 import update from 'immutability-helper'
 import { indexToArray, getItem, setInfo, isPath, getCloneItem, itemRemove, itemAdd } from './utils';
 import _ from 'lodash';
-
+const { Header, Footer, Sider, Content } = Layout;
+const { SubMenu } = Menu;
 const { MonthPicker, RangePicker, WeekPicker } = DatePicker;
 const GlobalComponent = {
     Button, List, Space, Image, Grid, NavBar, Input, Rate, Switch,
@@ -21,7 +23,7 @@ const soundData = [
         name: 'Button',
         value: '第一个',
         attr: {
-            color:'primary',
+            color: 'primary',
             size: 'middle',
             value: '第一个',
         }
@@ -76,6 +78,7 @@ const soundData = [
     },
     {
         name: 'NavBar',
+        value: '导航栏标题',
         attr: {}
     },
 
@@ -116,6 +119,8 @@ class EditPage extends Component {
                     value: '第一个'
                 }
             }],
+            showAttrPanel: false,
+            showPreView: false,
         };
     }
 
@@ -196,7 +201,7 @@ class EditPage extends Component {
     }
 
     render() {
-
+      
         // 递归函数
         const loop = (arr, index) => (
             arr.map((item, i) => {
@@ -223,7 +228,7 @@ class EditPage extends Component {
                     </div>
                 }
                 const ComponentInfo = GlobalComponent[item.name]
-                return <div data-id={indexs}><ComponentInfo {...item.attr} >{item.value}</ComponentInfo></div>
+                return <div data-id={indexs} onClick={() => showAttr()}><ComponentInfo {...item.attr}  >{item.value}</ComponentInfo></div>
             })
         )
         // 递归函数
@@ -253,9 +258,21 @@ class EditPage extends Component {
             },
         }
 
-        function exportDom() {
-            console.log('ssss' + document.documentElement)
+        
+        const _this = this;
+        function showAttr() {
+            console.log("showAttr click");
+            _this.setState({
+                showAttrPanel: !_this.state.showAttrPanel
+            })
         }
+
+        function showPreView() {
+            _this.setState({
+                showPreView: !_this.state.showPreView
+            })
+        }
+
         function saveJson(data) {
             var content = JSON.stringify(data);
             console.log('保存的数据：' + content)
@@ -280,38 +297,88 @@ class EditPage extends Component {
 
         return (
             <>
-                <h2>组件列表</h2>
-                <Sortable
-                    options={{
-                        group: {
-                            name: 'formItem',
-                            pull: 'clone',
-                            put: false,
-                        },
-                        sort: false,
-                    }}
-                >
-                    {
-                        soundData.map(item => {
-                            return <div data-id={item.name}><Tag>{item.name}</Tag></div>
-                        })
-                    }
-                </Sortable>
-                <h2>容器</h2>
-                <Sortable
-                    ref={c => c && (this.sortable = c.sortable)}
-                    options={{
-                        ...sortableOption,
-                        onUpdate: evt => (this.sortableUpdate(evt)),
-                        onAdd: evt => (this.sortableAdd(evt)),
-                    }}
-                    key={uniqueId()}
-                >
-                    {loop(this.state.Data, '')}
-                </Sortable>
-                <h2>预览</h2>
-                {loopPreView(this.state.Data, '')}
-                <Button onClick={() => saveJson(this.state.Data)}>保存</Button>
+                <Layout  >
+
+                    {/* <Sider width={150}>
+                        <Header>Header</Header>
+                        <Menu
+                            mode="inline"
+                            defaultSelectedKeys={['1']}
+                            defaultOpenKeys={['sub1']}
+                            style={{ height: '100%', borderRight: 0 }}
+                        >
+                            <Menu.Item key="1"  >
+                                新建页面
+                            </Menu.Item>
+                            <SubMenu key="sub1" title="subnav 1">
+                               
+                            </SubMenu>
+                            <SubMenu key="sub2" title="subnav 2">
+                                <Menu.Item key="5">option5</Menu.Item>
+                                <Menu.Item key="6">option6</Menu.Item>
+                                <Menu.Item key="7">option7</Menu.Item>
+                                <Menu.Item key="8">option8</Menu.Item>
+                            </SubMenu>
+                        </Menu>
+                    </Sider> */}
+                    <Layout  >
+                        <Header>
+                        <Button onClick={() => showPreView(this.state.Data)}>预览</Button>
+                        <Button onClick={() => saveJson(this.state.Data)}>保存</Button>
+                        </Header>
+                        <Layout>
+                            <Sider >
+                                <h2>组件列表</h2>
+                                <Sortable
+                                    options={{
+                                        group: {
+                                            name: 'formItem',
+                                            pull: 'clone',
+                                            put: false,
+                                        },
+                                        sort: false,
+                                    }}
+                                >
+                                    {
+                                        soundData.map(item => {
+                                            return <div data-id={item.name}><Tag>{item.name}</Tag></div>
+                                        })
+                                    }
+                                </Sortable></Sider>
+                            <Content>
+                                <h2>编辑区间</h2>
+                                <Sortable
+                                    ref={c => c && (this.sortable = c.sortable)}
+                                    options={{
+                                        ...sortableOption,
+                                        onUpdate: evt => (this.sortableUpdate(evt)),
+                                        onAdd: evt => (this.sortableAdd(evt)),
+                                    }}
+                                    key={uniqueId()}
+                                >
+                                    {loop(this.state.Data, '')}
+                                </Sortable></Content>
+
+                           {this.state.showAttrPanel ? <Sider><h2>属性</h2>
+                           
+                           </Sider>
+                            :null }
+
+                        </Layout>
+
+                        
+                    </Layout>
+
+                    {this.state.showPreView ? <Layout  >
+                       <h2>预览</h2>
+                        {loopPreView(this.state.Data, '')}
+                    </Layout>
+                        : null }
+
+                </Layout>
+
+
+               
             </>
         );
     }

@@ -122,3 +122,10 @@ CORS(api_v1)
 def list_users():
  return "user example"
  ```
+
+
+ ### 打包发布
+ ```
+ yarn build 
+ 
+ ```
