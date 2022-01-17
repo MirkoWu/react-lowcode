@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Button, List, Space, Image, Grid, NavBar, Input, Rate, Switch } from 'antd-mobile';
-import { Layout, DatePicker, Tag, Menu, Breadcrumb } from 'antd';
+import { Layout, DatePicker, Tag, Menu, Breadcrumb, Form } from 'antd';
 
 import Sortable from 'react-sortablejs';
 import uniqueId from 'lodash/uniqueId';
@@ -26,12 +26,18 @@ const soundData = [
             color: 'primary',
             size: 'middle',
             value: '第一个',
+            style: {
+                height: 200,
+            }
         }
     },
     {
         name: 'Switch',
         attr: {
-            size: 'large',
+            style: {
+                height: 90,
+            }
+
         }
     },
     {
@@ -51,6 +57,10 @@ const soundData = [
             width: 100,
             height: 100,
             src: 'https://img2.baidu.com/it/u=1685092271,2574681286&fm=253&fmt=auto&app=120&f=JPEG?w=1200&h=797',
+            style: {
+                width: 200,
+                height: 200,
+            }
         }
     },
     {
@@ -71,10 +81,12 @@ const soundData = [
     {
         name: 'Grid',
         attr: {
+            columns: 2,
+            gap: 10,
             style: {
                 border: '1px solid red'
             }
-        }
+        },
     },
     {
         name: 'NavBar',
@@ -111,17 +123,30 @@ class EditPage extends Component {
 
     constructor(props) {
         super(props);
+        let initData = [{
+            name: 'Input',
+            attr: {
+                size: 'large',
+                value: '第一个'
+            }
+        }];
+        let cacheData = localStorage.getItem('cache');
+        console.log("cacheData =" +cacheData);
         this.state = {
-            Data: [{
-                name: 'Input',
-                attr: {
-                    size: 'large',
-                    value: '第一个'
-                }
-            }],
+            Data: cacheData ? JSON.parse(cacheData)  : initData,
+            // Data: [{
+            //     name: 'Input',
+            //     attr: {
+            //         size: 'large',
+            //         value: '第一个'
+            //     }
+            // }],
             showAttrPanel: false,
             showPreView: false,
+            selectComponent: null,
         };
+        
+       
     }
 
     // 拖拽的添加方法
@@ -201,7 +226,7 @@ class EditPage extends Component {
     }
 
     render() {
-      
+
         // 递归函数
         const loop = (arr, index) => (
             arr.map((item, i) => {
@@ -228,7 +253,7 @@ class EditPage extends Component {
                     </div>
                 }
                 const ComponentInfo = GlobalComponent[item.name]
-                return <div data-id={indexs} onClick={() => showAttr()}><ComponentInfo {...item.attr}  >{item.value}</ComponentInfo></div>
+                return <div data-id={indexs} onClick={() => showAttr(item)}><ComponentInfo {...item.attr}  >{item.value}</ComponentInfo></div>
             })
         )
         // 递归函数
@@ -258,12 +283,13 @@ class EditPage extends Component {
             },
         }
 
-        
+
         const _this = this;
-        function showAttr() {
-            console.log("showAttr click");
+        function showAttr(component) {
+            console.log("showAttr click : " + component.name);
             _this.setState({
-                showAttrPanel: !_this.state.showAttrPanel
+                selectComponent: component,
+                showAttrPanel: !_this.state.showAttrPanel,
             })
         }
 
@@ -272,7 +298,43 @@ class EditPage extends Component {
                 showPreView: !_this.state.showPreView
             })
         }
-
+        function updateContent(value) {
+            if (_this.state.selectComponent) {
+                _this.state.selectComponent.value = value;
+                _this.setState({
+                    selectComponent: _this.state.selectComponent
+                })
+            }
+        }
+        function updateWidth(value) {
+            if (_this.state.selectComponent) {
+                console.log('updateHeight = ' + value)
+                _this.state.selectComponent.attr.style.width = value;
+                localStorage.setItem('cache', JSON.stringify(_this.state.Data));
+                _this.setState({
+                    selectComponent: _this.state.selectComponent
+                })
+                _this.setState({ Data:_this.state.Data })
+            }
+        }
+        function updateHeight(value) {
+            if (_this.state.selectComponent) {
+                console.log('updateHeight = ' + value)
+                _this.state.selectComponent.attr.style.height = value;
+                localStorage.setItem('cache', JSON.stringify(_this.state.Data));
+                _this.setState({
+                    selectComponent: _this.state.selectComponent
+                })
+            }
+        }
+        function updateImageSrc(value) {
+            if (_this.state.selectComponent) {
+                _this.state.selectComponent.attr.src = value;
+                _this.setState({
+                    selectComponent: _this.state.selectComponent
+                })
+            }
+        }
         function saveJson(data) {
             var content = JSON.stringify(data);
             console.log('保存的数据：' + content)
@@ -323,8 +385,8 @@ class EditPage extends Component {
                     </Sider> */}
                     <Layout  >
                         <Header>
-                        <Button onClick={() => showPreView(this.state.Data)}>预览</Button>
-                        <Button onClick={() => saveJson(this.state.Data)}>保存</Button>
+                            <Button onClick={() => showPreView(this.state.Data)}>预览</Button>
+                            <Button onClick={() => saveJson(this.state.Data)}>保存</Button>
                         </Header>
                         <Layout>
                             <Sider >
@@ -359,26 +421,42 @@ class EditPage extends Component {
                                     {loop(this.state.Data, '')}
                                 </Sortable></Content>
 
-                           {this.state.showAttrPanel ? <Sider><h2>属性</h2>
-                           
-                           </Sider>
-                            :null }
+                            {this.state.showAttrPanel ? <Sider><h2>属性</h2>
+
+                                <Form style={{ backgroundColor: '#FFFFFF' }}
+                                    layout="vertical">
+                                    <Form.Item label='宽'>
+                                        <Input onChange={(value) => { updateWidth(value) }}></Input>
+                                    </Form.Item>
+                                    <Form.Item label='高'>
+                                        <Input onChange={(value) => { updateHeight(value) }}></Input>
+                                    </Form.Item>
+                                    <Form.Item label='内容'>
+                                        <Input onChange={(value) => { updateContent(value) }}></Input>
+                                    </Form.Item>
+                                    <Form.Item label='图片链接'>
+                                        <Input onChange={(value) => { updateImageSrc(value) }}></Input>
+                                    </Form.Item>
+                                </Form>
+
+                            </Sider>
+                                : null}
 
                         </Layout>
 
-                        
+
                     </Layout>
 
                     {this.state.showPreView ? <Layout  >
-                       <h2>预览</h2>
+                        <h2>预览</h2>
                         {loopPreView(this.state.Data, '')}
                     </Layout>
-                        : null }
+                        : null}
 
                 </Layout>
 
 
-               
+
             </>
         );
     }

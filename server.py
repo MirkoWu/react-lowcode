@@ -34,7 +34,7 @@ app = Flask(__name__)
 #         # 获取post过来的文件名称，从name=file参数中获取
 #         # file = request.files['file']
 #         files = request.files.getlist('file')
-#         print(len(files))
+#         print(len(files))f
 #         for file in files:
 #             print(file.filename)
 #             if file and allowed_file(file.filename):
